@@ -1,27 +1,68 @@
 //sfc a snippet that create a stateless functional component
 import classes from "./Header.module.scss";
-import {Link} from 'react-router-dom';
+import {Link, useHistory} from 'react-router-dom';
 import { BiMenuAltRight } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 
 const Navbar = () => {
-    const [menuOpen,setMenuOpen] = useState(true);
+
+    const history=useHistory();
+
+    const [menuOpen,setMenuOpen] = useState(false);
+    const [size,setSize] = useState({
+        width: undefined,
+        height: undefined
+    });
+    //to 
+    useEffect(() => {
+        const sizeHundler= ()=>{
+            setSize({
+                width: window.innerWidth,
+                height: window.innerHeight
+            })
+        }
+        
+        window.addEventListener('resize',sizeHundler)
+        return () => {
+            //the cleanUp function
+            window.removeEventListener('resize',sizeHundler)
+        }
+    }, [])
+
+    //to prevent the menuopen on the large size
+    useEffect(() => {
+        if(size.width>768 && menuOpen ){
+            setMenuOpen(false);
+        }
+        
+    }, [size.width,menuOpen])
+
+    const toggleClick = () => {
+        setMenuOpen(!menuOpen);
+    }
+
+    //
+    const ctaClickHandler= ()=>{
+        toggleClick();
+        history.push('/page-cta');
+    }
 
     return (  
         <header className={classes.navbar}>
             <div className={classes.navbar__content}>
-                <h2 className={classes.navbar__content_logo}>navbar</h2>
-                <nav className={`${classes.navbar__content_Items} ${menuOpen ? classes.isMenu : "" }`}>
+                <Link to='/' className={classes.navbar__content_logo}>navbar</Link>
+                <nav className={`${classes.navbar__content_Items} ${menuOpen && size.width<768 ? classes.isMenu : "" }`} >
                     <ul>
-                        <li> <Link to='/'>Home</Link> </li>
-                        <li> <Link to='/about'>About</Link> </li>
+                        <li> <Link to='/' onClick={toggleClick} >Home</Link> </li>
+                        <li> <Link to='/about' onClick={toggleClick} >About</Link> </li>
                     </ul>
-                    <button>CTA page</button>
+                    <button onClick={ctaClickHandler}>CTA page</button>
                 </nav>
-                <div className={classes.navbar__content_toggle}>
-                    <BiMenuAltRight />
+                <div className={classes.navbar__content__toggle}>
+                    {menuOpen ? (<AiOutlineClose onClick={toggleClick} />) : <BiMenuAltRight onClick={toggleClick} /> }
+                    
                 </div>
 
             </div>
